@@ -65,9 +65,10 @@ runs:
     - name: Send Slack webhook
       if: inputs.slack-webhook-url
       uses: slackapi/slack-github-action@v1.23.0
-      payload: |
-        {
-          "text": "${{ inputs.message }}",
-        }
+      with:
+        payload: |
+          {
+            "text": "${{ inputs.message }}",
+          }
       env:
         SLACK_WEBHOOK_URL: ${{ inputs.slack-webhook-url }}
