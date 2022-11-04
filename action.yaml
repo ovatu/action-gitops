@@ -1,31 +1,33 @@
 name: "GitOps"
 description: "Run GitOps"
 inputs:
-   script:
-     description: "Script to run in the middle of gitops, usually to generate values.yaml file"
-   repository:
-     required: true
-     description: "Repo to use for GitOps"
-   repository-ssh-key:
-     required: true
-     description: "SSH Key to use to authenticate GitOps repo"
-   input-directory:
-     required: true
-     description: "Input directory, usually containing a helm chart to sync over to GitOps repo"
-   output-directory:
-     required: true
-     description: "Output directory, in the GitOps repo to place the output, usually a helm chart"
-   message:
-     required: true
-     description: "Message to use as part of the GitOps commit"
-   user-name:
-     required: true
-     default: O2V2
-     description: "Message to use as part of the GitOps commit"
-   user-email:
-     required: true
-     default: ci@ovatu.com
-     description: "Message to use as part of the GitOps commit"
+  script:
+    description: "Script to run in the middle of gitops, usually to generate values.yaml file"
+  repository:
+    required: true
+    description: "Repo to use for GitOps"
+  repository-ssh-key:
+    required: true
+    description: "SSH Key to use to authenticate GitOps repo"
+  input-directory:
+    required: true
+    description: "Input directory, usually containing a helm chart to sync over to GitOps repo"
+  output-directory:
+    required: true
+    description: "Output directory, in the GitOps repo to place the output, usually a helm chart"
+  message:
+    required: true
+    description: "Message to use as part of the GitOps commit"
+  user-name:
+    required: true
+    default: O2V2
+    description: "Message to use as part of the GitOps commit"
+  user-email:
+    required: true
+    default: ci@ovatu.com
+    description: "Message to use as part of the GitOps commit"
+  slack-webhook-url:
+    description: "Slack webhook URL for end notification"
 runs:
   using: "composite"
   steps:
@@ -59,3 +61,13 @@ runs:
           git commit -am "${{ inputs.message }}"
           git push
         fi
+
+    - name: Send Slack webhook
+      if: inputs.slack-webhook-url
+      uses: slackapi/slack-github-action@v1.23.0
+      payload: |
+        {
+          "text": "${{ inputs.message }}",
+        }
+      env:
+        SLACK_WEBHOOK_URL: ${{ inputs.slack-webhook-url }}
