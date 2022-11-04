@@ -1,0 +1,51 @@
+name: "Gitops"
+description: "Run gitops"
+inputs:
+   script:
+     required: true
+     description: "script"
+   repository:
+     required: true
+     description: "gitops repo"
+   repository-ssh-key:
+     required: true
+     description: "repository-ssh-key"
+   input-directory:
+     required: true
+     description: "input-directory"
+   output-directory:
+     required: true
+     description: "output-directory"
+   message:
+     required: true
+     description: "message"
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout gitops repo
+      uses: actions/checkout@v3
+      with: 
+        repository: ${{ inputs.repository }}
+        ssh-key: ${{ inputs.repository-ssh-key }}
+        path: ./gitops
+
+    - name: "Run pre-script"
+      shell: bash
+      run: |
+        rsync -vr --delete $GITHUB_WORKSPACE/${{ inputs.input-directory }} $GITHUB_WORKSPACE/${{ inputs.output-directory }}
+        cd ${{ inputs.output-directory }}
+
+    - name: Run script
+      shell: bash
+      working-directory: ${{ inputs.output-directory }}
+      run: ${{ inputs.script }}
+
+    - name: "Run post-script"
+      shell: bash
+      working-directory: ${{ inputs.output-directory }}
+      run: |
+        git add .
+        git config user.name O2V2
+        git config user.email ci@ovatu.com
+        git commit -am "${{ inputs.message }}"
+        git push
