@@ -50,8 +50,12 @@ runs:
       shell: bash
       working-directory: ${{ inputs.output-directory }}
       run: |
-        git add .
         git config user.name ${{ inputs.user-name }}
         git config user.email ${{ inputs.user-email }}
-        git commit -am "${{ inputs.message }}"
-        git push
+
+        git add .
+
+        if [ -n "$(git status --porcelain)" ]; then
+          git commit -am "${{ inputs.message }}"
+          git push
+        fi
